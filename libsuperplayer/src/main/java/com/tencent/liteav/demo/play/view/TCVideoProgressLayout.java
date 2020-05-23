@@ -18,6 +18,7 @@ import com.tencent.liteav.demo.play.R;
 public class TCVideoProgressLayout extends RelativeLayout {
     private ImageView       mIvThumbnail;       // 视频缩略图
     private TextView        mTvTime;            // 视频进度文本
+    private TextView mTvDistanced;  //视频进度差值
     private ProgressBar     mProgressBar;       // 进度条
     private HideRunnable    mHideRunnable;      // 隐藏自身的线程
     private int             duration = 1000;    // 自身消失的延迟事件ms
@@ -37,6 +38,7 @@ public class TCVideoProgressLayout extends RelativeLayout {
         mIvThumbnail = (ImageView) findViewById(R.id.progress_iv_thumbnail);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_pb_bar);
         mTvTime = (TextView) findViewById(R.id.progress_tv_time);
+        mTvDistanced = findViewById(R.id.progress_distanced_tv);
         setVisibility(GONE);
         mHideRunnable = new HideRunnable();
     }
@@ -59,6 +61,12 @@ public class TCVideoProgressLayout extends RelativeLayout {
         mTvTime.setText(text);
     }
 
+    /**
+     * 设置视频进度事件差值
+     */
+    public void setTimeDistanced(String text) {
+        mTvDistanced.setText(text);
+    }
     /**
      * 设置progressbar的进度值
      *

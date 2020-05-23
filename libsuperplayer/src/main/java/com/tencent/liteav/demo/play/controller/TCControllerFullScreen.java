@@ -19,12 +19,12 @@ import com.tencent.liteav.demo.play.R;
 import com.tencent.liteav.demo.play.SuperPlayerConst;
 import com.tencent.liteav.demo.play.bean.TCPlayImageSpriteInfo;
 import com.tencent.liteav.demo.play.bean.TCPlayKeyFrameDescInfo;
+import com.tencent.liteav.demo.play.bean.TCVideoQuality;
 import com.tencent.liteav.demo.play.net.TCLogReport;
 import com.tencent.liteav.demo.play.utils.TCTimeUtil;
 import com.tencent.liteav.demo.play.utils.TCVideoGestureUtil;
 import com.tencent.liteav.demo.play.view.TCPointSeekBar;
 import com.tencent.liteav.demo.play.view.TCVideoProgressLayout;
-import com.tencent.liteav.demo.play.bean.TCVideoQuality;
 import com.tencent.liteav.demo.play.view.TCVodMoreView;
 import com.tencent.liteav.demo.play.view.TCVodQualityView;
 import com.tencent.liteav.demo.play.view.TCVolumeBrightnessProgressLayout;
@@ -36,84 +36,84 @@ import java.util.List;
 
 /**
  * 全屏模式播放控件
- *
+ * <p>
  * 除{@link TCControllerWindow}基本功能外，还包括进度条关键帧打点信息显示与跳转、快进快退时缩略图的显示、切换画质
  * 镜像播放、硬件加速、倍速播放、弹幕、截图等功能
- *
+ * <p>
  * 1、点击事件监听{@link #onClick(View)}
- *
+ * <p>
  * 2、触摸事件监听{@link #onTouchEvent(MotionEvent)}
- *
+ * <p>
  * 3、进度条滑动事件监听{@link #onProgressChanged(TCPointSeekBar, int, boolean)}
- *                    {@link #onStartTrackingTouch(TCPointSeekBar)}{@link #onStopTrackingTouch(TCPointSeekBar)}
- *
+ * {@link #onStartTrackingTouch(TCPointSeekBar)}{@link #onStopTrackingTouch(TCPointSeekBar)}
+ * <p>
  * 4、进度条打点信息点击监听{@link #onSeekBarPointClick(View, int)}
- *
+ * <p>
  * 5、切换画质监听{@link #onQualitySelect(TCVideoQuality)}
- *
+ * <p>
  * 6、倍速播放监听{@link #onSpeedChange(float)}
- *
+ * <p>
  * 7、镜像播放监听{@link #onMirrorChange(boolean)}
- *
+ * <p>
  * 8、硬件加速监听{@link #onHWAcceleration(boolean)}
- *
  */
 public class TCControllerFullScreen extends RelativeLayout implements IController, View.OnClickListener,
-        TCVodMoreView.Callback, TCVodQualityView.Callback, TCPointSeekBar.OnSeekBarChangeListener, TCPointSeekBar.OnSeekBarPointClickListener{
+        TCVodMoreView.Callback, TCVodQualityView.Callback, TCPointSeekBar.OnSeekBarChangeListener, TCPointSeekBar.OnSeekBarPointClickListener {
 
     // UI控件
-    private RelativeLayout                      mLayoutTop;                             // 顶部标题栏布局
-    private LinearLayout                        mLayoutBottom;                          // 底部进度条所在布局
-    private ImageView                           mIvPause;                               // 暂停播放按钮
-    private TextView                            mTvTitle;                               // 视频名称文本
-    private TextView                            mTvBackToLive;                          // 返回直播文本
-    private ImageView                           mIvWatermark;                           // 水印
-    private TextView                            mTvCurrent;                             // 当前进度文本
-    private TextView                            mTvDuration;                            // 总时长文本
-    private TCPointSeekBar                      mSeekBarProgress;                       // 播放进度条
-    private LinearLayout                        mLayoutReplay;                          // 重播按钮所在布局
-    private ProgressBar                         mPbLiveLoading;                         // 加载圈
-    private TCVolumeBrightnessProgressLayout    mGestureVolumeBrightnessProgressLayout; // 音量亮度调节布局
-    private TCVideoProgressLayout               mGestureVideoProgressLayout;            // 手势快进提示布局
+    private RelativeLayout mLayoutTop;                             // 顶部标题栏布局
+    private LinearLayout mLayoutBottom;                          // 底部进度条所在布局
+    private ImageView mIvPause;                               // 暂停播放按钮
+    private TextView mTvTitle;                               // 视频名称文本
+    private TextView mTvBackToLive;                          // 返回直播文本
+    private ImageView mIvWatermark;                           // 水印
+    private TextView mTvCurrent;                             // 当前进度文本
+    private TextView mTvDuration;                            // 总时长文本
+    private TCPointSeekBar mSeekBarProgress;                       // 播放进度条
+    private LinearLayout mLayoutReplay;                          // 重播按钮所在布局
+    private ProgressBar mPbLiveLoading;                         // 加载圈
+    private TCVolumeBrightnessProgressLayout mGestureVolumeBrightnessProgressLayout; // 音量亮度调节布局
+    private TCVideoProgressLayout mGestureVideoProgressLayout;            // 手势快进提示布局
 
-    private TextView                            mTvQuality;                             // 当前画质文本
-    private ImageView                           mIvBack;                                // 顶部标题栏中的返回按钮
-    private ImageView                           mIvDanmu;                               // 弹幕按钮
-    private ImageView                           mIvSnapshot;                            // 截屏按钮
-    private ImageView                           mIvLock;                                // 锁屏按钮
-    private ImageView                           mIvMore;                                // 更多设置弹窗按钮
-    private TCVodQualityView                    mVodQualityView;                        // 画质列表弹窗
-    private TCVodMoreView                       mVodMoreView;                           // 更多设置弹窗
-    private TextView                            mTvVttText;                             // 关键帧打点信息文本
+    private TextView mTvQuality;                             // 当前画质文本
+    private ImageView mIvBack;                                // 顶部标题栏中的返回按钮
+    private ImageView mIvDanmu;                               // 弹幕按钮
+    private ImageView mIvSnapshot;                            // 截屏按钮
+    private ImageView mIvLock;                                // 锁屏按钮
+    private ImageView mIvMore;                                // 更多设置弹窗按钮
+    private TCVodQualityView mVodQualityView;                        // 画质列表弹窗
+    private TCVodMoreView mVodMoreView;                           // 更多设置弹窗
+    private TextView mTvVttText;                             // 关键帧打点信息文本
 
-    private IControllerCallback                 mControllerCallback;                    // 播放控制回调
-    private HideViewControllerViewRunnable      mHideViewRunnable;                      // 隐藏控件子线程
-    private HideLockViewRunnable                mHideLockViewRunnable;                  // 隐藏锁屏按钮子线程
-    private GestureDetector                     mGestureDetector;                       // 手势检测监听器
-    private TCVideoGestureUtil                  mVideoGestureUtil;                      // 手势控制工具
+    private IControllerCallback mControllerCallback;                    // 播放控制回调
+    private HideViewControllerViewRunnable mHideViewRunnable;                      // 隐藏控件子线程
+    private HideLockViewRunnable mHideLockViewRunnable;                  // 隐藏锁屏按钮子线程
+    private GestureDetector mGestureDetector;                       // 手势检测监听器
+    private TCVideoGestureUtil mVideoGestureUtil;                      // 手势控制工具
 
-    private boolean                             isShowing;                              // 自身是否可见
-    private boolean                             mIsChangingSeekBarProgress;             // 进度条是否正在拖动，避免SeekBar由于视频播放的update而跳动
-    private int                                 mPlayType;                              // 当前播放视频类型
-    private int                                 mCurrentPlayState = -1;                 // 当前播放状态
-    private long                                mDuration;                              // 视频总时长
-    private long                                mLivePushDuration;                      // 直播推流总时长
-    private long                                mProgress;                              // 当前播放进度
+    private boolean isShowing;                              // 自身是否可见
+    private boolean mIsChangingSeekBarProgress;             // 进度条是否正在拖动，避免SeekBar由于视频播放的update而跳动
+    private int mPlayType;                              // 当前播放视频类型
+    private int mCurrentPlayState = -1;                 // 当前播放状态
+    private long mDuration;                              // 视频总时长
+    private long mLivePushDuration;                      // 直播推流总时长
+    private long mProgress;                              // 当前播放进度
 
-    private Bitmap                              mBackgroundBmp;                         // 背景图
-    private Bitmap                              mWaterMarkBmp;                          // 水印图
-    private float                               mWaterMarkBmpX;                         // 水印x坐标
-    private float                               mWaterMarkBmpY;                         // 水印y坐标
+    private Bitmap mBackgroundBmp;                         // 背景图
+    private Bitmap mWaterMarkBmp;                          // 水印图
+    private float mWaterMarkBmpX;                         // 水印x坐标
+    private float mWaterMarkBmpY;                         // 水印y坐标
 
-    private boolean                             mDanmuOn;                               // 弹幕是否开启
-    private TXImageSprite                       mTXImageSprite;                         // 雪碧图信息
-    private List<TCPlayKeyFrameDescInfo>        mTXPlayKeyFrameDescInfoList;            // 关键帧信息
-    private int                                 mSelectedPos = -1;                      // 点击的关键帧时间点
-    private boolean                             mLockScreen;                            // 是否锁屏
+    private boolean mDanmuOn;                               // 弹幕是否开启
+    private TXImageSprite mTXImageSprite;                         // 雪碧图信息
+    private List<TCPlayKeyFrameDescInfo> mTXPlayKeyFrameDescInfoList;            // 关键帧信息
+    private int mSelectedPos = -1;                      // 点击的关键帧时间点
+    private boolean mLockScreen;                            // 是否锁屏
 
-    private TCVideoQuality                      mDefaultVideoQuality;                   // 默认画质
-    private List<TCVideoQuality>                mVideoQualityList;                      // 画质列表
-    private boolean                             mFirstShowQuality;                      // 是都是首次显示画质信息
+    private TCVideoQuality mDefaultVideoQuality;                   // 默认画质
+    private List<TCVideoQuality> mVideoQualityList;                      // 画质列表
+    private boolean mFirstShowQuality;                      // 是都是首次显示画质信息
+    private float mDownPlayTime = 0; //滑动开始是的视频播放时间
 
     public TCControllerFullScreen(Context context) {
         super(context);
@@ -172,6 +172,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
                 if (mLockScreen) return true;
                 if (mVideoGestureUtil != null) {
                     mVideoGestureUtil.reset(getWidth(), mSeekBarProgress.getProgress());
+                    mDownPlayTime = 0;
                 }
                 return true;
             }
@@ -217,20 +218,41 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
                     float currentTime = (mDuration * percentage);
                     if (mPlayType == SuperPlayerConst.PLAYTYPE_LIVE || mPlayType == SuperPlayerConst.PLAYTYPE_LIVE_SHIFT) {
                         if (mLivePushDuration > SuperPlayerConst.MAX_SHIFT_TIME) {
-                            currentTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME *  (1 - percentage));
+                            currentTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME * (1 - percentage));
                         } else {
-                            currentTime  = mLivePushDuration * percentage;
+                            currentTime = mLivePushDuration * percentage;
                         }
                         mGestureVideoProgressLayout.setTimeText(TCTimeUtil.formattedTime((long) currentTime));
                     } else {
                         mGestureVideoProgressLayout.setTimeText(TCTimeUtil.formattedTime((long) currentTime) + " / " + TCTimeUtil.formattedTime((long) mDuration));
                     }
+                    mGestureVideoProgressLayout.setTimeDistanced(getDistancesTimeString(currentTime));
                     setThumbnail(progress);
                 }
-                if (mSeekBarProgress!= null)
+                if (mSeekBarProgress != null)
                     mSeekBarProgress.setProgress(progress);
             }
         });
+    }
+
+    /**
+     * 获取播放时间差字符串
+     *
+     * @param currentTime 当前的播放时间
+     * @return
+     */
+    private String getDistancesTimeString(float currentTime) {
+        if (mDownPlayTime == 0f) {
+            mDownPlayTime = currentTime;
+        }
+        float distancedTime = currentTime - mDownPlayTime;
+        String distancesTimeStr = TCTimeUtil.formattedTime((long) Math.abs(distancedTime));
+        if (distancedTime > 0) {
+            distancesTimeStr = "+" + distancesTimeStr;
+        } else {
+            distancesTimeStr = "-" + distancesTimeStr;
+        }
+        return distancesTimeStr;
     }
 
     /**
@@ -300,7 +322,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
 
     /**
      * 切换播放状态
-     *
+     * <p>
      * 双击和点击播放/暂停按钮会触发此方法
      */
     private void togglePlayState() {
@@ -339,7 +361,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
             }
         } else {
             mIvLock.setVisibility(VISIBLE);
-            if (mHideLockViewRunnable!=null) {
+            if (mHideLockViewRunnable != null) {
                 getHandler().removeCallbacks(mHideLockViewRunnable);
                 getHandler().postDelayed(mHideLockViewRunnable, 7000);
             }
@@ -381,7 +403,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
         isShowing = true;
         mLayoutTop.setVisibility(View.VISIBLE);
         mLayoutBottom.setVisibility(View.VISIBLE);
-        if (mHideLockViewRunnable!=null) {
+        if (mHideLockViewRunnable != null) {
             this.getHandler().removeCallbacks(mHideLockViewRunnable);
         }
         mIvLock.setVisibility(VISIBLE);
@@ -572,7 +594,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
      */
     @Override
     public void updateVideoQuality(TCVideoQuality videoQuality) {
-        if(videoQuality==null){
+        if (videoQuality == null) {
             mTvQuality.setText("");
             return;
         }
@@ -581,9 +603,9 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
             mTvQuality.setText(videoQuality.title);
         }
         if (mVideoQualityList != null && mVideoQualityList.size() != 0) {
-            for (int i = 0 ; i  < mVideoQualityList.size(); i++) {
+            for (int i = 0; i < mVideoQualityList.size(); i++) {
                 TCVideoQuality quality = mVideoQualityList.get(i);
-                if (quality!=null && quality.title!=null &&quality.title.equals(mDefaultVideoQuality.title)) {
+                if (quality != null && quality.title != null && quality.title.equals(mDefaultVideoQuality.title)) {
                     mVodQualityView.setDefaultSelectedQuality(i);
                     break;
                 }
@@ -652,11 +674,11 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
                 float percentage = progress * 1.0f / mSeekBarProgress.getMax();
                 if (mPlayType == SuperPlayerConst.PLAYTYPE_LIVE || mPlayType == SuperPlayerConst.PLAYTYPE_LIVE_SHIFT) {
                     if (mLivePushDuration > SuperPlayerConst.MAX_SHIFT_TIME) {
-                        seekTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME *  (1 - percentage));
+                        seekTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME * (1 - percentage));
                     } else {
-                        seekTime  = (int) (mLivePushDuration * percentage);
+                        seekTime = (int) (mLivePushDuration * percentage);
                     }
-                }else {
+                } else {
                     seekTime = (int) (percentage * mDuration);
                 }
                 if (mControllerCallback != null) {
@@ -666,9 +688,9 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
             }
         }
 
-        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
             this.getHandler().removeCallbacks(mHideViewRunnable);
-        } else if(event.getAction() == MotionEvent.ACTION_UP) {
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
             this.getHandler().postDelayed(mHideViewRunnable, 7000);
         }
         return true;
@@ -748,15 +770,15 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
         if (mVideoQualityList == null || mVideoQualityList.size() == 0) {
             return;
         }
-        if(mVideoQualityList.size()==1 && (mVideoQualityList.get(0)==null || TextUtils.isEmpty(mVideoQualityList.get(0).title))){
+        if (mVideoQualityList.size() == 1 && (mVideoQualityList.get(0) == null || TextUtils.isEmpty(mVideoQualityList.get(0).title))) {
             return;
         }
         // 设置默认显示分辨率文字
         mVodQualityView.setVisibility(View.VISIBLE);
         if (!mFirstShowQuality && mDefaultVideoQuality != null) {
-            for (int i = 0 ; i  < mVideoQualityList.size(); i++) {
+            for (int i = 0; i < mVideoQualityList.size(); i++) {
                 TCVideoQuality quality = mVideoQualityList.get(i);
-                if (quality!=null && quality.title!=null &&quality.title.equals(mDefaultVideoQuality.title)) {
+                if (quality != null && quality.title != null && quality.title.equals(mDefaultVideoQuality.title)) {
                     mVodQualityView.setDefaultSelectedQuality(i);
                     break;
                 }
@@ -772,7 +794,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
     private void toggleLockState() {
         mLockScreen = !mLockScreen;
         mIvLock.setVisibility(VISIBLE);
-        if (mHideLockViewRunnable!=null) {
+        if (mHideLockViewRunnable != null) {
             this.getHandler().removeCallbacks(mHideLockViewRunnable);
             this.getHandler().postDelayed(mHideLockViewRunnable, 7000);
         }
@@ -817,9 +839,9 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
             float currentTime = (mDuration * percentage);
             if (mPlayType == SuperPlayerConst.PLAYTYPE_LIVE || mPlayType == SuperPlayerConst.PLAYTYPE_LIVE_SHIFT) {
                 if (mLivePushDuration > SuperPlayerConst.MAX_SHIFT_TIME) {
-                    currentTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME *  (1 - percentage));
+                    currentTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME * (1 - percentage));
                 } else {
-                    currentTime  = mLivePushDuration * percentage;
+                    currentTime = mLivePushDuration * percentage;
                 }
                 mGestureVideoProgressLayout.setTimeText(TCTimeUtil.formattedTime((long) currentTime));
             } else {
@@ -861,7 +883,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
                 toggleView(mPbLiveLoading, true);
                 int seekTime = (int) (mLivePushDuration * curProgress * 1.0f / maxProgress);
                 if (mLivePushDuration > SuperPlayerConst.MAX_SHIFT_TIME) {
-                    seekTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME *  (maxProgress - curProgress) * 1.0f / maxProgress);
+                    seekTime = (int) (mLivePushDuration - SuperPlayerConst.MAX_SHIFT_TIME * (maxProgress - curProgress) * 1.0f / maxProgress);
                 }
                 if (mControllerCallback != null) {
                     mControllerCallback.onSeekTo(seekTime);
@@ -873,7 +895,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
 
     @Override
     public void onSeekBarPointClick(final View view, final int pos) {
-        if (mHideLockViewRunnable!=null) {
+        if (mHideLockViewRunnable != null) {
             this.getHandler().removeCallbacks(mHideViewRunnable);
             this.getHandler().postDelayed(mHideViewRunnable, 7000);
         }
@@ -977,15 +999,16 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
     /**
      * 隐藏锁屏按钮的runnable
      */
-    private static class HideLockViewRunnable implements Runnable{
+    private static class HideLockViewRunnable implements Runnable {
         private WeakReference<TCControllerFullScreen> mWefControllerFullScreen;
 
         public HideLockViewRunnable(TCControllerFullScreen controller) {
             mWefControllerFullScreen = new WeakReference<>(controller);
         }
+
         @Override
         public void run() {
-            if (mWefControllerFullScreen!=null && mWefControllerFullScreen.get()!=null) {
+            if (mWefControllerFullScreen != null && mWefControllerFullScreen.get() != null) {
                 mWefControllerFullScreen.get().mIvLock.setVisibility(GONE);
             }
         }
