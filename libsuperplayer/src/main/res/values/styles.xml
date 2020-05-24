@@ -10,6 +10,7 @@
         <attr name="psb_thumbBackground" format="reference" />
         <attr name="psb_backgroundColor" format="color" />
         <attr name="psb_progressColor" format="color" />
+        <attr name="psb_secondary_progressColor" format="color" />
         <attr name="psb_progress" format="integer" />
         <attr name="psb_max" format="integer" />
         <attr name="psb_progressHeight" format="dimension" />

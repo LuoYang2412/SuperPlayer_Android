@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.tencent.liteav.basic.log.TXCLog;
 import com.tencent.liteav.demo.play.bean.TCResolutionName;
+import com.tencent.liteav.demo.play.bean.TCVideoQuality;
 import com.tencent.liteav.demo.play.controller.IControllerCallback;
 import com.tencent.liteav.demo.play.controller.TCControllerFloat;
 import com.tencent.liteav.demo.play.controller.TCControllerFullScreen;
@@ -43,7 +44,6 @@ import com.tencent.liteav.demo.play.utils.TCNetWatcher;
 import com.tencent.liteav.demo.play.utils.TCUrlUtil;
 import com.tencent.liteav.demo.play.utils.TCVideoQualityUtil;
 import com.tencent.liteav.demo.play.view.TCDanmuView;
-import com.tencent.liteav.demo.play.bean.TCVideoQuality;
 import com.tencent.rtmp.ITXLivePlayListener;
 import com.tencent.rtmp.ITXVodPlayListener;
 import com.tencent.rtmp.TXBitrateItem;
@@ -398,11 +398,10 @@ public class SuperPlayerView extends RelativeLayout implements ITXVodPlayListene
             mVodPlayer.setStartTime(0);
             mVodPlayer.setAutoPlay(true);
             mVodPlayer.setVodListener(this);
-            if(mCurrentProtocol!=null && mCurrentProtocol.getToken()!=null){
-                TXCLog.d(TAG,"TOKEN: "+mCurrentProtocol.getToken());
+            if (mCurrentProtocol != null && mCurrentProtocol.getToken() != null) {
+                TXCLog.d(TAG, "TOKEN: " + mCurrentProtocol.getToken());
                 mVodPlayer.setToken(mCurrentProtocol.getToken());
-            }
-            else {
+            } else {
                 mVodPlayer.setToken(null);
             }
             int ret = mVodPlayer.startPlay(url);
@@ -469,8 +468,19 @@ public class SuperPlayerView extends RelativeLayout implements ITXVodPlayListene
      * @param duration 总时长(秒)
      */
     private void updateVideoProgress(long current, long duration) {
-        mControllerWindow.updateVideoProgress(current, duration);
-        mControllerFullScreen.updateVideoProgress(current, duration);
+        updateVideoProgress(current, duration, 0);
+    }
+
+    /**
+     * 更新播放进度
+     *
+     * @param current          当前播放进度(秒)
+     * @param duration         总时长(秒)
+     * @param playAbleProgress 加载进度(秒)
+     */
+    private void updateVideoProgress(long current, long duration, long playAbleProgress) {
+        mControllerWindow.updateVideoProgress(current, duration, playAbleProgress);
+        mControllerFullScreen.updateVideoProgress(current, duration, playAbleProgress);
     }
 
     /**
@@ -1044,7 +1054,7 @@ public class SuperPlayerView extends RelativeLayout implements ITXVodPlayListene
                     List<TCVideoQuality> videoQualities = new ArrayList<>();
                     int size = bitrateItems.size();
 
-                    List<TCResolutionName> resolutionNames = (mCurrentProtocol!=null) ? mCurrentProtocol.getResolutionNameList() : null;
+                    List<TCResolutionName> resolutionNames = (mCurrentProtocol != null) ? mCurrentProtocol.getResolutionNameList() : null;
                     for (int i = 0; i < size; i++) {
                         TXBitrateItem bitrateItem = bitrateItems.get(i);
                         TCVideoQuality quality;
@@ -1076,7 +1086,13 @@ public class SuperPlayerView extends RelativeLayout implements ITXVodPlayListene
             case TXLiveConstants.PLAY_EVT_PLAY_PROGRESS:
                 int progress = param.getInt(TXLiveConstants.EVT_PLAY_PROGRESS_MS);
                 int duration = param.getInt(TXLiveConstants.EVT_PLAY_DURATION_MS);
-                updateVideoProgress(progress / 1000, duration / 1000);
+                int playAbleProgress = param.getInt(TXLiveConstants.EVT_PLAYABLE_DURATION_MS);
+                Log.d(TAG, "onPlayEvent: " + playAbleProgress);
+                if (playAbleProgress > progress) {
+                    updateVideoProgress(progress / 1000, duration / 1000, playAbleProgress / 1000);
+                } else {
+                    updateVideoProgress(progress / 1000, duration / 1000);
+                }
                 break;
             case TXLiveConstants.PLAY_EVT_PLAY_BEGIN: {
                 updatePlayState(SuperPlayerConst.PLAYSTATE_PLAYING);

@@ -239,7 +239,7 @@ public class TCControllerFloat extends RelativeLayout implements IController, Vi
      * @param duration 视频总时长(秒)
      */
     @Override
-    public void updateVideoProgress(long current, long duration) {
+    public void updateVideoProgress(long current, long duration , long playAbleProgress) {
 
     }
 

@@ -75,7 +75,7 @@ public interface IController {
      * @param current  当前进度(秒)
      * @param duration 视频总时长(秒)
      */
-    void updateVideoProgress(long current, long duration);
+    void updateVideoProgress(long current, long duration ,long playAbleProgress);
 
     /**
      * 更新播放类型

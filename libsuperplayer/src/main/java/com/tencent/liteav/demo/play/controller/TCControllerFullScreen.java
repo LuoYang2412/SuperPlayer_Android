@@ -505,7 +505,7 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
      * @param duration 视频总时长(秒)
      */
     @Override
-    public void updateVideoProgress(long current, long duration) {
+    public void updateVideoProgress(long current, long duration, long playAbleProgress) {
         mProgress = current < 0 ? 0 : current;
         mDuration = duration < 0 ? 0 : duration;
         mTvCurrent.setText(TCTimeUtil.formattedTime(mProgress));
@@ -525,7 +525,11 @@ public class TCControllerFullScreen extends RelativeLayout implements IControlle
         if (percentage >= 0 && percentage <= 1) {
             int progress = Math.round(percentage * mSeekBarProgress.getMax());
             if (!mIsChangingSeekBarProgress)
-                mSeekBarProgress.setProgress(progress);
+                if (playAbleProgress > progress) {
+                    mSeekBarProgress.setProgress(progress, Math.round(playAbleProgress));
+                } else {
+                    mSeekBarProgress.setProgress(progress);
+                }
             mTvDuration.setText(TCTimeUtil.formattedTime(mDuration));
         }
     }

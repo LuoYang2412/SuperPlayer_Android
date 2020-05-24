@@ -19,65 +19,69 @@ import java.util.List;
 
 /**
  * 一个带有打点的，模仿seekbar的view
- *
+ * <p>
  * 除seekbar基本功能外，还具备关键帧信息打点的功能
- *
+ * <p>
  * 1、添加打点信息{@link #addPoint(PointParams, int)}
- *
+ * <p>
  * 2、自定义thumb{@link TCThumbView}
- *
+ * <p>
  * 3、打点view{@link TCPointView}
- *
+ * <p>
  * 4、打点信息参数{@link PointParams}
  */
 public class TCPointSeekBar extends RelativeLayout {
 
-    private int                             mWidth;                 // 自身宽度
-    private int                             mHeight;                // 自身高度
-    private int                             mSeekBarLeft;           // SeekBar的起点位置
-    private int                             mSeekBarRight;          // SeekBar的终点位置
-    private int                             mBgTop;                 // 进度条距离父布局上边界的距离
-    private int                             mBgBottom;              // 进度条距离父布局下边界的距离
-    private int                             mRoundSize;             // 进度条圆角大小
-    private int                             mViewEnd;               // 自身的右边界
+    private int mWidth;                 // 自身宽度
+    private int mHeight;                // 自身高度
+    private int mSeekBarLeft;           // SeekBar的起点位置
+    private int mSeekBarRight;          // SeekBar的终点位置
+    private int mBgTop;                 // 进度条距离父布局上边界的距离
+    private int mBgBottom;              // 进度条距离父布局下边界的距离
+    private int mRoundSize;             // 进度条圆角大小
+    private int mViewEnd;               // 自身的右边界
 
-    private Paint                           mNormalPaint;           // seekbar背景画笔
-    private Paint                           mProgressPaint;         // seekbar进度条画笔
-    private Paint                           mPointerPaint;          // 打点view画笔
+    private Paint mNormalPaint;           // seekbar背景画笔
+    private Paint mProgressPaint;         // seekbar进度条画笔
+    private Paint mSecondaryProgressPaint;// seekbar第二进度条画笔
+    private Paint mPointerPaint;          // 打点view画笔
 
-    private Drawable                        mThumbDrawable;         // 拖动块图片
-    private int                             mHalfDrawableWidth;     // Thumb图片宽度的一半
+    private Drawable mThumbDrawable;         // 拖动块图片
+    private int mHalfDrawableWidth;     // Thumb图片宽度的一半
     // Thumb距父布局中的位置
-    private float                           mThumbLeft;             // thumb的marginLeft值
-    private float                           mThumbRight;            // thumb的marginRight值
-    private float                           mThumbTop;              // thumb的marginTop值
-    private float                           mThumbBottom;           // thumb的marginBottom值
+    private float mThumbLeft;             // thumb的marginLeft值
+    private float mThumbRight;            // thumb的marginRight值
+    private float mThumbTop;              // thumb的marginTop值
+    private float mThumbBottom;           // thumb的marginBottom值
+
+    private float mSecondaryProgressRight; // 第二进度条的marginRight值
 
 
     private boolean                         mIsOnDrag;              // 是否处于拖动状态
     private float                           mCurrentLeftOffset = 0; // thumb距离打点view的偏移量
     private float                           mLastX;                 // 上一次点击事件的横坐标，用于计算偏移量
 
-    private int                             mCurrentProgress;       // 当前seekbar的数值
-    private int                             mMaxProgress = 100;     // seekbar最大数值
-    private float                           mBarHeightPx = 0;       // seekbar的高度大小 px
+    private int mCurrentProgress;       // 当前seekbar的数值
+    private int mSecondaryCurrentProgress; //当前seekbar第二进度条的数值
+    private int mMaxProgress = 100;     // seekbar最大数值
+    private float mBarHeightPx = 0;       // seekbar的高度大小 px
 
-    private TCThumbView                     mThumbView;             // 滑动ThumbView
-    private List<PointParams>               mPointList;             // 打点信息的列表
-    private OnSeekBarPointClickListener     mPointClickListener;    // 打点view点击回调
-    private boolean                         mIsChangePointViews;    // 打点信息是否更新过
+    private TCThumbView mThumbView;             // 滑动ThumbView
+    private List<PointParams> mPointList;             // 打点信息的列表
+    private OnSeekBarPointClickListener mPointClickListener;    // 打点view点击回调
+    private boolean mIsChangePointViews;    // 打点信息是否更新过
 
     public TCPointSeekBar(Context context) {
         super(context);
         init(null);
     }
 
-    public TCPointSeekBar(Context context,AttributeSet attrs) {
+    public TCPointSeekBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs);
     }
 
-    public TCPointSeekBar(Context context,AttributeSet attrs, int defStyleAttr) {
+    public TCPointSeekBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
@@ -99,6 +103,17 @@ public class TCPointSeekBar extends RelativeLayout {
             invalidate();
             callbackProgressInternal(progress, false);
         }
+    }
+
+    /**
+     * 设置seekbar进度值
+     *
+     * @param progress
+     * @param secondaryProgress
+     */
+    public void setProgress(int progress, int secondaryProgress) {
+        mSecondaryCurrentProgress = secondaryProgress;
+        setProgress(progress);
     }
 
     /**
@@ -131,12 +146,14 @@ public class TCPointSeekBar extends RelativeLayout {
     private void init(AttributeSet attrs) {
         setWillNotDraw(false);
         int progressColor = getResources().getColor(R.color.default_progress_color);
+        int secondaryProgressColor = getResources().getColor(R.color.default_secondary_progress_color);
         int backgroundColor = getResources().getColor(R.color.default_progress_background_color);
         if (attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.TCPointSeekBar);
             mThumbDrawable = a.getDrawable(R.styleable.TCPointSeekBar_psb_thumbBackground);
             mHalfDrawableWidth = mThumbDrawable.getIntrinsicWidth() / 2;
             progressColor = a.getColor(R.styleable.TCPointSeekBar_psb_progressColor, progressColor);
+            secondaryProgressColor = a.getColor(R.styleable.TCPointSeekBar_psb_secondary_progressColor, secondaryProgressColor);
             backgroundColor = a.getColor(R.styleable.TCPointSeekBar_psb_backgroundColor, backgroundColor);
             mCurrentProgress = a.getInt(R.styleable.TCPointSeekBar_psb_progress, 0);
             mMaxProgress = a.getInt(R.styleable.TCPointSeekBar_psb_max, 100);
@@ -152,6 +169,9 @@ public class TCPointSeekBar extends RelativeLayout {
 
         mProgressPaint = new Paint();
         mProgressPaint.setColor(progressColor);
+
+        mSecondaryProgressPaint = new Paint();
+        mSecondaryProgressPaint.setColor(secondaryProgressColor);
         this.post(new Runnable() {
             @Override
             public void run() {
@@ -199,6 +219,10 @@ public class TCPointSeekBar extends RelativeLayout {
         mThumbLeft = dis;
         mLastX = mThumbLeft;
         mCurrentLeftOffset = 0;
+
+        if (mSecondaryCurrentProgress > 0) {
+            mSecondaryProgressRight = (mSeekBarRight - mSeekBarLeft) * (mSecondaryCurrentProgress * 1.0f / mMaxProgress);
+        }
         calculatePointerRect();
     }
 
@@ -218,7 +242,7 @@ public class TCPointSeekBar extends RelativeLayout {
                     addThumbView();
                     mIsChangePointViews = false;
                 }
-                if(!mIsOnDrag) {
+                if (!mIsOnDrag) {
                     calProgressDis();
                     changeThumbPos();
                 }
@@ -244,8 +268,15 @@ public class TCPointSeekBar extends RelativeLayout {
         pRecf.top = mBgTop;
         pRecf.right = mThumbRight - mHalfDrawableWidth;
         pRecf.bottom = mBgBottom;
-        canvas.drawRoundRect(pRecf,
-                mRoundSize, mRoundSize, mProgressPaint);
+        canvas.drawRoundRect(pRecf, mRoundSize, mRoundSize, mProgressPaint);
+
+        RectF spRecf = new RectF();
+        spRecf.left = mThumbRight - mHalfDrawableWidth;
+        spRecf.top = mBgTop;
+        spRecf.right = mSecondaryCurrentProgress > mCurrentProgress ? mSecondaryProgressRight : mThumbRight - mHalfDrawableWidth;
+        spRecf.bottom = mBgBottom;
+        canvas.drawRoundRect(spRecf, mRoundSize, mRoundSize, mSecondaryProgressPaint);
+
 
         addThumbAndPointViews();
     }
@@ -299,7 +330,6 @@ public class TCPointSeekBar extends RelativeLayout {
             case MotionEvent.ACTION_UP:
                 isHandle = handleUpEvent(event);
                 break;
-
         }
         return isHandle;
     }
@@ -367,7 +397,6 @@ public class TCPointSeekBar extends RelativeLayout {
             mListener.onProgressChanged(this, progress, isFromUser);
         }
     }
-
 
     private boolean handleDownEvent(MotionEvent event) {
         float x = event.getX();
@@ -456,7 +485,7 @@ public class TCPointSeekBar extends RelativeLayout {
      * 打点view
      */
     private static class TCPointView extends View {
-        private int   mColor = Color.WHITE; // view颜色
+        private int mColor = Color.WHITE; // view颜色
         private Paint mPaint;               // 画笔
         private RectF mRectF;               // 打点view的位置信息(矩形)
 
@@ -465,12 +494,12 @@ public class TCPointSeekBar extends RelativeLayout {
             init();
         }
 
-        public TCPointView(Context context,  AttributeSet attrs) {
+        public TCPointView(Context context, AttributeSet attrs) {
             super(context, attrs);
             init();
         }
 
-        public TCPointView(Context context,  AttributeSet attrs, int defStyleAttr) {
+        public TCPointView(Context context, AttributeSet attrs, int defStyleAttr) {
             super(context, attrs, defStyleAttr);
             init();
         }
@@ -519,8 +548,8 @@ public class TCPointSeekBar extends RelativeLayout {
      * 拖动块view
      */
     private static class TCThumbView extends View {
-        private Paint    mPaint;        // 画笔
-        private Rect     mRect;         // 位置信息(矩形)
+        private Paint mPaint;        // 画笔
+        private Rect mRect;         // 位置信息(矩形)
         private Drawable mThumbDrawable;// thumb图片
 
         public TCThumbView(Context context, Drawable drawable) {
