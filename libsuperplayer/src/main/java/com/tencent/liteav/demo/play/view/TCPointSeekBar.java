@@ -57,9 +57,10 @@ public class TCPointSeekBar extends RelativeLayout {
     private float mSecondaryProgressRight; // 第二进度条的marginRight值
 
 
-    private boolean                         mIsOnDrag;              // 是否处于拖动状态
-    private float                           mCurrentLeftOffset = 0; // thumb距离打点view的偏移量
-    private float                           mLastX;                 // 上一次点击事件的横坐标，用于计算偏移量
+    private boolean mIsOnDrag;              // 是否处于拖动状态
+    private boolean mIsOnClick;             //是否处于点击状态
+    private float mCurrentLeftOffset = 0; // thumb距离打点view的偏移量
+    private float mLastX;                 // 上一次点击事件的横坐标，用于计算偏移量
 
     private int mCurrentProgress;       // 当前seekbar的数值
     private int mSecondaryCurrentProgress; //当前seekbar第二进度条的数值
@@ -98,7 +99,7 @@ public class TCPointSeekBar extends RelativeLayout {
         if (progress > mMaxProgress) {
             progress = mMaxProgress;
         }
-        if (!mIsOnDrag) {
+        if (!mIsOnDrag && !mIsOnClick) {
             mCurrentProgress = progress;
             invalidate();
             callbackProgressInternal(progress, false);
@@ -343,6 +344,28 @@ public class TCPointSeekBar extends RelativeLayout {
                 mListener.onStopTrackingTouch(this);
             }
             return true;
+        } else if (mIsOnClick) {
+            mCurrentLeftOffset = x - mThumbLeft;
+            //计算出标尺的Rect
+            calculatePointerRect();
+            if (mThumbRight - mHalfDrawableWidth <= mSeekBarLeft) {
+                mThumbLeft = 0;
+                mThumbRight = mThumbLeft + mThumbDrawable.getIntrinsicWidth();
+            }
+            if (mThumbLeft + mHalfDrawableWidth >= mSeekBarRight) {
+                mThumbRight = mWidth;
+                mThumbLeft = mWidth - mThumbDrawable.getIntrinsicWidth();
+            }
+            changeThumbPos();
+            invalidate();
+            callbackProgress();
+            mLastX = x;
+
+            mIsOnClick = false;
+            if (mListener != null) {
+                mListener.onStopTrackingTouch(this);
+            }
+            return true;
         }
         return false;
     }
@@ -366,6 +389,11 @@ public class TCPointSeekBar extends RelativeLayout {
             invalidate();
             callbackProgress();
             mLastX = x;
+            return true;
+        } else if (mLastX - x < 50) {
+            if (mListener != null)
+                mListener.onStartTrackingTouch(this);
+            mIsOnClick = true;
             return true;
         }
         return false;
@@ -407,8 +435,10 @@ public class TCPointSeekBar extends RelativeLayout {
             mIsOnDrag = true;
             mLastX = x;
             return true;
+        } else {
+            mLastX = x;
+            return true;
         }
-        return false;
     }
 
     private void calculatePointerRect() {
